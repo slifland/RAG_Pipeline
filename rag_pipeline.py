@@ -42,4 +42,22 @@ else:
     collection = Chroma(persist_directory="local_embeddings", embedding_function=embedding_type)
 if(taking_query):
     query = input("Enter your query" + '\n')
-    que
+    query_embedding = embeddings.embed_query(query)
+    results = collection.similarity_search_by_vector(embedding=query_embedding, k=k)
+   #for result in results:
+        #print(result)
+if(taking_query and gpt_prompt):
+    prompt_context = "Documents: \n"
+    for result in results:
+        prompt_context =  prompt_context + "START DOC: " + result.page_content + " END DOC" + '\n' + '\n'
+    prompt_question = query
+    final_instructions = "\n Answer the question according to the documents provided. If the documents do not provide an adequate answer, please return NONE."
+    prompt = prompt_context + '\n' + "Question: " + prompt_question + final_instructions
+    print(prompt)
+    completion = client.chat.completions.create(
+	model=MODEL,
+	messages=[{"role":"user", "content": prompt}]
+    )
+    print(completion.choices[0].message.content)
+    
+	    
